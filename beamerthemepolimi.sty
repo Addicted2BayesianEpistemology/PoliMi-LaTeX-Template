@@ -1,0 +1,929 @@
+% beamerthemepolimi.sty
+% ----------------------------------------------------------------------------
+% Beamer theme inspired by the Politecnico di Milano (Ateneo) 2024 PowerPoint
+% template. Geometry, colours and font sizes are taken directly from the
+% slide-layout XML of the original .pptx so the layouts match the source.
+%
+% Recommended compiler: XeLaTeX or LuaLaTeX (so Manrope can be loaded via
+%                       fontspec). pdfLaTeX works too but falls back to a
+%                       generic sans font.
+%
+% Usage:
+%   \documentclass[aspectratio=169]{beamer}
+%   \usetheme{polimi}
+% ----------------------------------------------------------------------------
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerthemepolimi}[2025/01/02 v2.0 Politecnico di Milano Beamer theme]
+
+\RequirePackage{kvoptions}
+\SetupKeyvalOptions{family=polimi,prefix=polimi@}
+\DeclareStringOption[en]{lang}
+\DeclareBoolOption[true]{showlogo}
+\ProcessKeyvalOptions*
+
+\RequirePackage{tikz}
+\usetikzlibrary{calc,fadings,shadings,positioning,backgrounds,arrows.meta}
+
+% Custom fading: ~85% opaque at centre, ~10% at edge — matches the
+% steel-with-soft-edge look from the source .pptx
+% \tikzfading[name=polimi fade,
+%   inner color=transparent!15,
+%   outer color=transparent!90]
+\tikzfading[name=polimi fade,
+  left color=transparent!15,
+  right color=transparent!90]
+\RequirePackage{etoolbox}
+\RequirePackage{ifxetex,ifluatex}
+
+\newif\ifpolimi@xeorlua
+\ifxetex\polimi@xeorluatrue\fi
+\ifluatex\polimi@xeorluatrue\fi
+
+% ---------- Colours --------------------------------------------------------
+\definecolor{polimiNavy}{HTML}{102C53}
+\definecolor{polimiNavyDarkHalfTitle}{HTML}{0b1f3a} % Custom darker navy for title page title (Layout 25)
+\definecolor{polimiSlate}{HTML}{596C87}
+\definecolor{polimiSteel}{HTML}{8795A8}
+\definecolor{polimiMist}{HTML}{B7BFCA}
+\definecolor{polimiFog}{HTML}{D0D5DD}
+\definecolor{polimiCloud}{HTML}{F3F3F6}
+\definecolor{polimiPanel}{HTML}{DDE2E8}
+\definecolor{polimiInk}{HTML}{000000}
+\definecolor{polimiPaper}{HTML}{FFFFFF}
+\definecolor{polimiBibBg}{HTML}{f6f4f1}
+
+% ---------- Fonts ----------------------------------------------------------
+\ifpolimi@xeorlua
+  \RequirePackage{fontspec}
+  \IfFileExists{./fonts/Manrope-Regular.ttf}{%
+    \setsansfont{Manrope}[
+      Path           = ./fonts/,
+      Extension      = .ttf,
+      UprightFont    = *-Regular,
+      ItalicFont     = *-Regular,
+      BoldFont       = *-Bold,
+      BoldItalicFont = *-Bold,
+      FontFace       = {l}{n}{*-Light},
+      FontFace       = {m}{n}{*-Medium},
+      FontFace       = {sb}{n}{*-SemiBold},
+      FontFace       = {eb}{n}{*-ExtraBold},
+    ]%
+    \renewcommand{\familydefault}{\sfdefault}%
+  }{%
+    \PackageWarning{beamerthemepolimi}{%
+      Manrope font files not found in ./fonts/. Falling back.%
+    }%
+    \renewcommand{\familydefault}{\sfdefault}%
+  }
+\else
+  \PackageWarning{beamerthemepolimi}{%
+    Compile with XeLaTeX or LuaLaTeX to use Manrope.%
+  }
+  \RequirePackage[T1]{fontenc}
+  \RequirePackage{lmodern}
+  \renewcommand{\familydefault}{\sfdefault}
+\fi
+
+% ---------- Math fonts -----------------------------------------------------
+% Keep math in Computer Modern while body text stays in Manrope. Beamer's
+% default font theme remaps the math 'letters' symbol font to follow the
+% sans family, so without intervention math variables (x, y, n, ...) get
+% rendered in Manrope while operators (\sin, \cos, ...) stay in CM — a
+% jarring mix.
+%
+% Solution: load unicode-math (XeLaTeX/LuaLaTeX only) and explicitly bind
+% math to Latin Modern Math, the unicode-math version of Computer Modern.
+% This bypasses Beamer's font-theme machinery entirely. Body text is
+% completely untouched and stays in Manrope.
+%
+% NOTE: the font is loaded by filename ('latinmodern-math.otf') rather
+% than by system name ('Latin Modern Math'). On some installations
+% (notably some macOS setups) fontspec's name-based lookup fails even
+% when the font is installed in the TeX tree. The filename form is
+% resolved by kpsewhich and works reliably on TeX Live, MacTeX, MiKTeX.
+\ifpolimi@xeorlua
+  \RequirePackage{unicode-math}
+  \setmathfont{latinmodern-math.otf}
+\fi
+
+% --- Opt-in: render Latin math in Manrope too ------------------------------
+% Call \polimimathmanrope in the preamble of your .tex BEFORE \begin{document}
+% to switch math Latin letters, digits, operators (\sin, \cos, \log, ...),
+% subscripts, and \mathbf to the sans text font (Manrope). Greek letters
+% (\alpha, \beta, ...), large operators (\sum, \int, \prod) and math symbols
+% stay in Computer Modern, because Manrope has no math-Greek or math-symbol
+% glyphs at the slots TeX expects. \mathrm{...} also stays CM serif by
+% design — useful for units and function labels.
+\newcommand{\polimimathmanrope}{%
+  \RequirePackage[italic,defaultmathsizes]{mathastext}%
+}
+
+% ---------- Logos ----------------------------------------------------------
+\providecommand{\polimilogodark}{logos/Bandiera_blu.pdf}
+\providecommand{\polimilogowhite}{logos/Bandiera_Bianco.pdf}
+\providecommand{\polimilogotipo}{logos/Logotipo_Nero.pdf}
+
+% ---------- Beamer base setup ----------------------------------------------
+\useinnertheme{default}
+\useoutertheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamercolor{normal text}{fg=polimiNavy, bg=polimiPaper}
+\setbeamercolor{structure}{fg=polimiNavy}
+\setbeamercolor{alerted text}{fg=polimiSlate}
+\setbeamercolor{frametitle}{fg=polimiNavy, bg=polimiPaper}
+\setbeamercolor{title}{fg=polimiPaper, bg=polimiNavy}
+\setbeamercolor{subtitle}{fg=polimiPaper}
+\setbeamercolor{author}{fg=polimiPaper}
+\setbeamercolor{date}{fg=polimiPaper}
+\setbeamercolor{itemize item}{fg=polimiNavy}
+\setbeamercolor{itemize subitem}{fg=polimiSlate}
+\setbeamercolor{enumerate item}{fg=polimiNavy}
+\setbeamercolor{block title}{bg=polimiNavy, fg=polimiPaper}
+\setbeamercolor{block body}{bg=polimiCloud, fg=polimiNavy}
+\setbeamercolor{caption name}{fg=polimiSlate}
+
+\setbeamertemplate{itemize item}{\color{polimiNavy}\rule[0.4ex]{0.5ex}{0.5ex}\hspace*{0.25em}}
+\setbeamertemplate{itemize subitem}{\color{polimiSlate}--}
+
+% ---------- Font sizes (taken from the layout / master XML) ----------------
+\setbeamerfont{title}{family=\sffamily, series=\fontseries{sb}\selectfont, size=\fontsize{34pt}{200pt}\selectfont}
+\setbeamerfont{subtitle}{family=\sffamily, series=\mdseries, size=\fontsize{13pt}{20pt}\selectfont}
+\setbeamerfont{author}{family=\sffamily, size=\fontsize{8pt}{14pt}\selectfont}
+\setbeamerfont{date}{family=\sffamily, size=\fontsize{8pt}{14pt}\selectfont}
+\setbeamerfont{frametitle}{family=\sffamily, series=\bfseries, size=\fontsize{20pt}{10pt}\selectfont}
+\setbeamerfont{section title}{family=\sffamily, series=\bfseries, size=\fontsize{18pt}{28pt}\selectfont}
+% Section/subsection big number: medium weight, NOT bold (matches the original)
+\setbeamerfont{section number}{family=\sffamily, series=\mdseries, size=\fontsize{60pt}{106pt}\selectfont}
+\setbeamerfont{footline}{family=\sffamily, size=\fontsize{7pt}{9pt}\selectfont}
+\setbeamerfont{headerbar}{family=\sffamily, size=\fontsize{5pt}{7pt}\selectfont}
+\setbeamerfont{caption}{family=\sffamily, size=\fontsize{8pt}{10pt}\selectfont, shape=\itshape}
+
+% ---------- Title page (Layout 25 in the source) ---------------------------
+% Two circles vertically tangent on the line y=5.26 cm. Top one clipped by
+% the top edge; bottom one mostly visible.
+\newcommand{\polimisubtitle}[1]{\def\polimi@subtitle{#1}}
+\def\polimi@subtitle{}
+
+\setbeamertemplate{title page}{%
+  \begin{tikzpicture}[overlay, remember picture]
+    % Vertical bg gradient: black at top → navy at bottom (Layout 25 bg)
+    \shade[bottom color=polimiNavy, top color=black]
+      (current page.south west) rectangle (current page.north east);
+    \fill[polimiNavy]
+      (current page.south west) rectangle (current page.north east);
+    \fill[black, path fading=south, opacity=0.7]
+      (current page.south west) rectangle (current page.north east);
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+      % Decorative circles with alpha gradient (origin at the corner of each
+      % circle's bounding box, fading to transparent at the far side).
+      % Top circle: rotated 180° so origin is at top-left of bbox = (9.92, 5.26)
+      % Bottom circle: origin at bottom-right of bbox = (15.18, -0.01)
+      \begin{scope}
+        \clip (0,0) rectangle (16,9);
+        % \fill[polimiSteel, path fading=polimi fade, opacity=0.95]
+        %   (12.55, 7.89) circle (2.63);
+        % \fill[polimiSteel, path fading=polimi fade, opacity=0.95]
+        %   (12.55, 2.62) circle (2.63);
+        \fill[polimiSteel, path fading=polimi fade, fading angle=315, opacity=0.55]
+          (12.55, 7.89) circle (2.63);
+        \fill[polimiSteel, path fading=polimi fade, fading angle=135, opacity=0.55]
+          (12.55, 2.62) circle (2.63);
+      \end{scope}
+      % Boundary lines
+      \draw[polimiPaper, opacity=0.30, line width=0.3pt] (0, 5.26) -- (16, 5.26);
+      \draw[polimiPaper, opacity=0.30, line width=0.3pt] (9.92, 0) -- (9.92, 9);
+      \draw[polimiPaper, opacity=0.30, line width=0.3pt] (15.18, 0) -- (15.18, 9);
+      % Logo
+      \ifpolimi@showlogo
+        \node[anchor=north west, inner sep=0pt] at (0.62, 8.6)
+          {\includegraphics[height=1.5cm]{\polimilogowhite}};
+      \fi
+      % Optional subtitle
+      \ifdefempty{\polimi@subtitle}{}{%
+        \node[anchor=south west, text=polimiPaper, align=left,
+              text width=8.88cm] at (0.79, 5.40)
+          {\usebeamerfont{subtitle}\polimi@subtitle};%
+      }
+      % Title
+      \node[anchor=south west, text=polimiPaper, align=left,
+            text width=8.88cm] at (0.79, 2.21)
+        {\usebeamerfont{title}\inserttitle};
+      % Date | Author
+      \node[anchor=base west, text=polimiPaper] at (0.79, 0.79)
+        {\usebeamerfont{date}\insertdate
+         \hspace{0.4em}\textcolor{polimiPaper!60}{$|$}\hspace{0.4em}
+         \usebeamerfont{author}\insertauthor};
+    \end{scope}
+  \end{tikzpicture}%
+}
+
+% ---------- Header bar -----------------------------------------------------
+\newcommand{\polimiheadertext}[1]{\def\polimi@headertext{#1}}
+\def\polimi@headertext{Campo facoltativo e personalizzabile}
+
+\newcommand{\polimi@headerbar}{%
+  \begin{tikzpicture}[overlay, remember picture]
+    \begin{scope}[shift={(current page.north west)}, x=1cm, y=1cm]
+      \ifpolimi@showlogo
+        \node[anchor=north west, inner sep=0pt] at (0.5,-0.25)
+          {\includegraphics[height=0.3cm]{\polimilogotipo}};
+      \fi
+      % \draw[polimiMist, line width=0.3pt] (0.5,-0.75) -- (15.5,-0.75);
+      % Center: institution + custom header text
+      \node[anchor=base, text=polimiSlate] at (8,-0.45)
+        {\usebeamerfont{headerbar}%
+         \polimi@headertext};
+      % Top-right: current/total page number
+      \node[anchor=base east, text=polimiSlate] at (15.5,-0.45)
+        {\usebeamerfont{headerbar}%
+         \insertframenumber/\inserttotalframenumber};
+    \end{scope}
+  \end{tikzpicture}%
+}
+
+\setbeamertemplate{headline}{%
+  \ifnum\c@framenumber>0\relax
+    \polimi@headerbar
+    \vspace{0.85cm}%
+  \fi
+}
+
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth, ht=1.0cm, dp=0.3cm,
+                        leftskip=0.4cm, rightskip=0.4cm]{frametitle}%
+    \usebeamerfont{frametitle}\insertframetitle%
+  \end{beamercolorbox}%
+}
+
+% \setbeamertemplate{footline}{%
+%   \ifnum\c@framenumber>0\relax
+%     \begin{tikzpicture}[overlay, remember picture]
+%       \node[anchor=south, text=polimiSteel] at
+%         ($(current page.south)+(0,0.25cm)$)
+%         {\usebeamerfont{footline}\itshape\insertshortauthor};
+%     \end{tikzpicture}%
+%   \fi
+% }
+\setbeamertemplate{footline}{}
+
+% ---------- Section page (Layout 3) ----------------------------------------
+% Big steel-blue dome (huge circle, center 8.87, 0; radius 7.15) +
+% small left circle outline + two horizontal lines + vertical line +
+% section title between the lines + 96pt zero-padded number bottom-right.
+\defbeamertemplate*{section page}{polimi}{%
+  \begin{tikzpicture}[overlay, remember picture]
+    \fill[polimiNavy]
+      (current page.south west) rectangle (current page.north east);
+    \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+      % Big dome — radial gradient: solid steel near outer edge, fading to
+      % transparent at the centre (matches the original Layout 3 gradient).
+      \begin{scope}
+        \clip (0,0) rectangle (16,9);
+        \begin{scope}
+          \clip (8.85, 0) circle (7.15);
+          % \shade[inner color=polimiNavy, outer color=polimiSteel, opacity=0.45]
+          %   (8.87, 0) circle (7.15);
+            % \shade[outer color=polimiSteel, inner color=polimiNavy, opacity=0.45]
+            %     (8.85, 0) circle (7.15);
+          \shade[outer color=polimiSteel, inner color=polimiNavy, opacity=0.30]
+              (6.0, -0.0) circle (18.0);
+        \end{scope}
+      \end{scope}
+      \draw[polimiPaper, opacity=0.45, line width=0.35pt] (0, 7.14) -- (16, 7.14);
+      \draw[polimiPaper, opacity=0.45, line width=0.35pt] (0, 5.44) -- (16, 5.44);
+      \draw[polimiPaper, opacity=0.45, line width=0.35pt] (1.68, 0) -- (1.68, 9);
+      \draw[polimiPaper, opacity=0.65, line width=0.55pt]
+        (0.84, 6.29) circle (0.84);
+      \node[anchor=west, text=polimiPaper, align=left] at (4.22, 6.29)
+        {\usebeamerfont{section title}\insertsectionhead};
+      \node[anchor=south east, text=polimiPaper, inner sep=0pt]
+        at (15.65, 0.85)
+        {\usebeamerfont{section number}%
+         \ifnum\value{section}<10 0\fi\arabic{section}};
+    \end{scope}
+  \end{tikzpicture}%
+}
+
+% ---------- Subsection page (Layout 5) -------------------------------------
+\defbeamertemplate*{subsection page}{polimi}{%
+  \begin{tikzpicture}[overlay, remember picture]
+    \fill[polimiPanel]
+      (current page.south west) rectangle (current page.north east);
+    \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+      \draw[polimiSlate, opacity=0.55, line width=0.35pt] (0, 7.14) -- (16, 7.14);
+      \draw[polimiSlate, opacity=0.55, line width=0.35pt] (0, 5.44) -- (16, 5.44);
+      \draw[polimiSlate, opacity=0.55, line width=0.35pt] (1.68, 0) -- (1.68, 9);
+      \draw[polimiNavy, opacity=0.75, line width=0.55pt]
+        (0.84, 6.29) circle (0.84);
+      \node[anchor=west, text=polimiNavy, align=left] at (4.22, 6.29)
+        {\usebeamerfont{section title}\insertsubsectionhead};
+      \node[anchor=south east, text=polimiNavy, inner sep=0pt]
+        at (15.65, 0.85)
+        {\usebeamerfont{section number}%
+         \ifnum\value{section}<10 0\fi\arabic{section}.\arabic{subsection}};
+    \end{scope}
+  \end{tikzpicture}%
+}
+
+% ============================================================================
+% ASYMMETRIC LAYOUTS  (Layouts 12 / 15 / 16 / 17 / 18 in the source)
+% ============================================================================
+
+% Image placeholder — used when the macro is called without an image path
+\newcommand{\polimi@imgbox}[3]{%
+  \begin{tikzpicture}
+    \ifstrempty{#1}{%
+      \fill[polimiFog] (0,0) rectangle (#2,#3);
+      \draw[polimiSlate, dashed, line width=0.3pt] (0,0) rectangle (#2,#3);
+      \node[text=polimiSlate, font=\sffamily\small] at (#2/2,#3/2) {Image placeholder};%
+    }{%
+      \node[anchor=south west, inner sep=0pt] at (0,0)
+        {\includegraphics[width=#2 cm, height=#3 cm, keepaspectratio]{#1}};%
+    }
+  \end{tikzpicture}%
+}
+
+% --- 1. Asymmetric two-column (Layout 12, slide 13) -----------------------
+%   \asymtextslide{title}{narrow-left content}{wide-right content}
+\newcommand{\asymtextslide}[3]{%
+  \begin{frame}[plain]
+    \begin{tikzpicture}[overlay, remember picture]
+      \fill[polimiCloud]
+        (current page.south west) rectangle (current page.north east);
+      \fill[polimiPaper]
+        (current page.south west) rectangle
+        ([xshift=3.74cm]current page.north west);
+    \end{tikzpicture}%
+    \polimi@headerbar
+    \begin{tikzpicture}[overlay, remember picture]
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \node[anchor=south west, text=polimiNavy, align=left, text width=2.84cm]
+          at (0.44, 6.84)
+          {\usebeamerfont{frametitle}#1};
+        \node[anchor=north west, text=polimiNavy, align=left,
+              text width=2.84cm, font=\small] at (0.44, 6.30)
+          {#2};
+        \node[anchor=north west, text=polimiNavy, align=left,
+              text width=11.34cm, font=\small] at (4.22, 6.30)
+          {#3};
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+% --- 2. Text + image right (Layout 15, slide 19) --------------------------
+%   \imagerightslide{title}{text}{image-path-or-empty}
+\newcommand{\imagerightslide}[3]{%
+  \begin{frame}[plain]
+    \polimi@headerbar
+    \begin{tikzpicture}[overlay, remember picture]
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \node[anchor=south west, text=polimiNavy, align=left, text width=6.18cm]
+          at (0.44, 6.84) {\usebeamerfont{frametitle}#1};
+        \node[anchor=north west, text=polimiNavy, align=left,
+              text width=6.18cm, font=\small] at (0.44, 6.30) {#2};
+        \node[anchor=south west, inner sep=0pt] at (7.51, 0.48)
+          {\polimi@imgbox{#3}{8.50}{7.45}};
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+% --- 3. Image left + text right (Layout 16, slide 20) ---------------------
+%   \imageleftslide{title}{text}{image-path-or-empty}
+\newcommand{\imageleftslide}[3]{%
+  \begin{frame}[plain]
+    \polimi@headerbar
+    \begin{tikzpicture}[overlay, remember picture]
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \node[anchor=south west, inner sep=0pt] at (1.16, 0.48)
+          {\polimi@imgbox{#3}{5.71}{7.45}};
+        \node[anchor=south west, text=polimiNavy, align=left, text width=7.91cm]
+          at (7.66, 6.84) {\usebeamerfont{frametitle}#1};
+        \node[anchor=north west, text=polimiNavy, align=left,
+              text width=7.91cm, font=\small] at (7.66, 6.30) {#2};
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+% --- 4. Text + image with caption right (Layout 17, slide 21) -------------
+%   \imagecaptionslide{title}{text}{image-path}{caption}
+\newcommand{\imagecaptionslide}[4]{%
+  \begin{frame}[plain]
+    \polimi@headerbar
+    \begin{tikzpicture}[overlay, remember picture]
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \node[anchor=south west, text=polimiNavy, align=left, text width=8.03cm]
+          at (0.44, 6.84) {\usebeamerfont{frametitle}#1};
+        \node[anchor=north west, text=polimiNavy, align=left,
+              text width=8.03cm, font=\small] at (0.44, 6.30) {#2};
+        \node[anchor=south west, inner sep=0pt] at (9.62, 0.85)
+          {\polimi@imgbox{#3}{5.94}{7.09}};
+        \node[anchor=base west, text=polimiSlate] at (9.62, 0.51)
+          {\usebeamerfont{caption}#4};
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+% --- 5. Text + two stacked images with captions (Layout 18, slide 22) -----
+%   \twoimagecaptionslide{title}{text}{img1}{cap1}{img2}{cap2}
+\newcommand{\twoimagecaptionslide}[6]{%
+  \begin{frame}[plain]
+    \polimi@headerbar
+    \begin{tikzpicture}[overlay, remember picture]
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \node[anchor=south west, text=polimiNavy, align=left, text width=8.03cm]
+          at (0.44, 6.84) {\usebeamerfont{frametitle}#1};
+        \node[anchor=north west, text=polimiNavy, align=left,
+              text width=8.03cm, font=\small] at (0.44, 6.30) {#2};
+        \node[anchor=south west, inner sep=0pt] at (9.62, 4.88)
+          {\polimi@imgbox{#3}{5.94}{3.08}};
+        \node[anchor=base west, text=polimiSlate] at (9.62, 4.55)
+          {\usebeamerfont{caption}#4};
+        \node[anchor=south west, inner sep=0pt] at (9.62, 0.85)
+          {\polimi@imgbox{#5}{5.94}{3.07}};
+        \node[anchor=base west, text=polimiSlate] at (9.62, 0.51)
+          {\usebeamerfont{caption}#6};
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+% ============================================================================
+% CLOSING SLIDE
+% ============================================================================
+\ifdefstring{\polimi@lang}{it}{%
+  \def\polimi@thanks{Grazie per l'attenzione}%
+}{%
+  \def\polimi@thanks{Thank you for your attention}%
+}
+
+\newcommand{\closingframe}[1][\polimi@thanks]{%
+  \begin{frame}[plain, noframenumbering]
+    \begin{tikzpicture}[overlay, remember picture]
+      \fill[polimiNavy]
+        (current page.south west) rectangle (current page.north east);
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        % Two horizontal lines bracketing the text
+        \draw[polimiPaper, opacity=0.45, line width=0.35pt] (0, 3.6) -- (16, 3.6);
+        \draw[polimiPaper, opacity=0.45, line width=0.35pt] (0, 1.8) -- (16, 1.8);
+        \draw[polimiPaper, opacity=0.45, line width=0.35pt] (1.68, 0) -- (1.68, 9);
+        % Small outline circle on the left
+        \draw[polimiPaper, opacity=0.65, line width=0.55pt]
+          (0.84, 2.7) circle (0.84);
+        % Centred text
+        \node[text=polimiPaper, align=center] at (8, 2.7)
+          {\usebeamerfont{section title}#1};
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+
+
+% --- Bibliography slide (full-width content) ----------------------------
+%   \bibslide{title}{bibliography content}
+\newcommand{\bibslide}[2]{%
+  \begin{frame}[plain]
+    \begin{tikzpicture}[overlay, remember picture]
+      \fill[polimiBibBg]
+        (current page.south west) rectangle (current page.north east);
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \ifpolimi@showlogo
+          \node[anchor=north west, inner sep=0pt] at (0.62, 8.6)
+            {\includegraphics[height=1.5cm]{\polimilogodark}};
+        \fi
+        \node[anchor=north west, text=polimiNavy, align=left,
+              text width=14cm, font=\footnotesize] at (0.79, 6.7) {#1};
+        \node[anchor=north east, text=polimiNavy, align=left,
+              text width=5cm, font=\footnotesize] at (15.7, 6.5) {#2};
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+% --- Bibliography slide with image / QR code on the right ---------------
+%   \bibslideimg{title}{bibliography content}{image-path}
+\newcommand{\bibslideimg}[3]{%
+  \begin{frame}[plain]
+    \begin{tikzpicture}[overlay, remember picture]
+      \fill[polimiBibBg]
+        (current page.south west) rectangle (current page.north east);
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \ifpolimi@showlogo
+          \node[anchor=north west, inner sep=0pt] at (0.62, 8.6)
+            {\includegraphics[height=1.5cm]{\polimilogodark}};
+        \fi
+        \node[anchor=north west, text=polimiNavy, align=left,
+              text width=9cm, font=\footnotesize] at (0.79, 6.7) {#1};
+        \node[anchor=north east, inner sep=0pt] at (14.8, 6.7)
+          {\includegraphics[width=4cm, height=4cm, keepaspectratio]{#2}};
+        \node[anchor=north east, text=polimiNavy, align=left,
+              text width=5cm, font=\footnotesize] at (15.7, 2.0) {#3};
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+
+
+
+% ============================================================================
+% TABLE OF CONTENTS
+% ============================================================================
+
+\setbeamertemplate{section in toc}{%
+  \leavevmode\color{polimiNavy}%
+  {\rule[0.4ex]{0.6ex}{0.6ex}}\hspace{0.5em}%
+  \textbf{\inserttocsection}\par%
+}
+\setbeamertemplate{subsection in toc}{%
+  \leavevmode\hspace{1.8em}%
+  \textcolor{polimiSlate}{--}\hspace{0.5em}%
+  \inserttocsubsection\par%
+}
+
+\ifdefstring{\polimi@lang}{it}{%
+  \def\polimi@toctitle{Sommario}%
+}{%
+  \def\polimi@toctitle{Outline}%
+}
+
+% \tocslide[tableofcontents options]  —  auto-renders \tableofcontents
+\newcommand{\tocslide}[1][]{%
+  \begin{frame}{\polimi@toctitle}
+    \ifstrempty{#1}{\tableofcontents}{\tableofcontents[#1]}%
+  \end{frame}%
+}
+
+% ============================================================================
+% CONTENT LAYOUTS
+% ============================================================================
+
+% --- Three-column symmetric layout -----------------------------------------
+%   \threecolslide{title}{left content}{centre content}{right content}
+\newcommand{\threecolslide}[4]{%
+  \begin{frame}[plain]
+    \polimi@headerbar
+    \begin{tikzpicture}[overlay, remember picture]
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \node[anchor=south west, text=polimiNavy] at (0.44, 7.25)
+          {\usebeamerfont{frametitle}#1};
+        \draw[polimiMist, line width=0.5pt] (0.00, 6.85) -- (16, 6.85);
+        % Column dividers
+        \draw[polimiMist, line width=0.4pt] (5.6, 0.0) -- (5.6, 6.85);
+        \draw[polimiMist, line width=0.4pt] (10.56, 0.0) -- (10.56, 6.85);
+        % Column content  (each ~4.84 cm wide)
+        \node[anchor=north west, text=polimiNavy, align=left,
+              text width=4.84cm, font=\small] at (0.44, 6.60) {#2};
+        \node[anchor=north west, text=polimiNavy, align=left,
+              text width=4.64cm, font=\small] at (5.86, 6.60) {#3};
+        \node[anchor=north west, text=polimiNavy, align=left,
+              text width=4.64cm, font=\small] at (10.82, 6.60) {#4};
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+% --- Full-bleed image slide -------------------------------------------------
+%   \fullbleedslide[optional title overlay]{image-path}
+%   The image is stretched to fill the entire slide (16:9).
+%   When a title is given a semi-transparent navy strip appears at the bottom.
+%   Pass an empty path to show a placeholder (useful for draft mode).
+\newcommand{\fullbleedslide}[2][]{%
+  \begin{frame}[plain]
+    \begin{tikzpicture}[overlay, remember picture]
+      \ifstrempty{#2}{%
+        \fill[polimiFog]
+          (current page.south west) rectangle (current page.north east);
+        \node[text=polimiSlate, font=\sffamily\Large] at (current page.center)
+          {Image placeholder};%
+      }{%
+        \node[anchor=center, inner sep=0pt] at (current page.center)
+          {\includegraphics[width=\paperwidth, height=\paperheight]{#2}};%
+      }%
+      \ifstrempty{#1}{}{%
+        \fill[polimiNavy, opacity=0.78]
+          (current page.south west)
+          rectangle ([yshift=2.0cm]current page.south east);
+        \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+          \node[anchor=west, text=polimiPaper, text width=14cm]
+            at (0.79, 1.0) {\usebeamerfont{frametitle}#1};
+        \end{scope}
+      }%
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+% --- Quote / highlight slide ------------------------------------------------
+%   \quoteslide[attribution]{quote text}
+%   Light polimiCloud background; large centred pull-quote in navy.
+% Key-value defaults for \quoteslide
+\pgfkeys{
+  /quoteslide/.is family, /quoteslide,
+  image/.store in      = \qs@image,       image      = ,
+  desaturate/.store in = \qs@desaturate,  desaturate = 0,
+  navyshade/.store in  = \qs@navyshade,   navyshade  = 0,
+  textcolor/.store in  = \qs@textcolor,   textcolor  = polimiNavy,
+}
+
+\newcommand{\quoteslide}[3][]{%
+  % #1 = key-value options, #2 = quote text, #3 = attribution (empty = none)
+  \pgfkeys{/quoteslide, #1}%
+  \begin{frame}[plain]
+    \begin{tikzpicture}[overlay, remember picture]
+      % ── Background ──────────────────────────────────────────────────────
+      \ifx\qs@image\empty
+        \fill[polimiCloud]
+          (current page.south west) rectangle (current page.north east);
+      \else
+        \node[anchor=center, inner sep=0pt] at (current page.center)
+          {\includegraphics[width=\paperwidth,
+                            height=\paperheight,
+                            keepaspectratio=false]{\qs@image}};
+      \fi
+      % ── Desaturation: white overlay (0 = none, 1 = fully white) ─────────
+      \fill[white, opacity=\qs@desaturate]
+        (current page.south west) rectangle (current page.north east);
+      % ── Navy shade overlay (0 = none, 1 = fully navy) ───────────────────
+      \fill[polimiNavy, opacity=\qs@navyshade]
+        (current page.south west) rectangle (current page.north east);
+      % ── Content ─────────────────────────────────────────────────────────
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \node[text=\qs@textcolor, align=center, text width=12.5cm,
+              font=\fontsize{17pt}{24pt}\selectfont\sffamily]
+          at (8.0, 4.9) {#2};
+        \ifstrempty{#3}{}{%
+          \draw[\qs@textcolor, line width=0.8pt] (6.5, 3.2) -- (9.5, 3.2);
+          \node[text=\qs@textcolor, align=center,
+                font=\small\itshape] at (8.0, 2.7) {#3};
+        }%
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+% --- Big number / statistics callout slide ----------------------------------
+%   \bignumberslide{title}{num1}{cap1}{num2}{cap2}{num3}{cap3}
+%   Three large statistics side by side, inspired by Layout 28 of the source.
+\newcommand{\bignumberslide}[7]{%
+  \begin{frame}[plain]
+    \polimi@headerbar
+    \begin{tikzpicture}[overlay, remember picture]
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \node[anchor=south west, text=polimiNavy] at (0.44, 7.25)
+          {\usebeamerfont{frametitle}#1};
+        \draw[polimiMist, line width=0.5pt] (0.0, 6.85) -- (16.0, 6.85);
+        % Column dividers
+        \draw[polimiMist, line width=0.4pt] (5.33, 0.0) -- (5.33, 6.85);
+        \draw[polimiMist, line width=0.4pt] (10.68, 0.0) -- (10.68, 6.85);
+
+        % Circles behind numbers — fading out toward the bottom
+        \draw[polimiFog, line width=0.8pt, path fading=south, opacity=0.8]
+          (2.67,  4.2) circle (2.65);
+        \draw[polimiFog, line width=0.8pt, path fading=south, opacity=0.8]
+          (8.0,   4.2) circle (2.65);
+        \draw[polimiFog, line width=0.8pt, path fading=south, opacity=0.8]
+          (13.32, 4.2) circle (2.65);
+          % Statistic 1
+        \node[text=polimiNavy, align=center,
+              font=\fontsize{32pt}{52pt}\selectfont\sffamily\fontseries{sb}\selectfont]
+          at (2.73, 4.6) {#2};
+        \node[text=polimiSlate, align=center, text width=4.5cm, font=\small]
+          at (2.73, 2.6) {#3};
+        % Statistic 2
+        \node[text=polimiNavy, align=center,
+              font=\fontsize{32pt}{52pt}\selectfont\sffamily\fontseries{sb}\selectfont]
+          at (8.0, 4.6) {#4};
+        \node[text=polimiSlate, align=center, text width=4.5cm, font=\small]
+          at (8.0, 2.6) {#5};
+        % Statistic 3
+        \node[text=polimiNavy, align=center,
+              font=\fontsize{32pt}{52pt}\selectfont\sffamily\fontseries{sb}\selectfont]
+          at (13.27, 4.6) {#6};
+        \node[text=polimiSlate, align=center, text width=4.5cm, font=\small]
+          at (13.27, 2.6) {#7};
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+% ============================================================================
+% MATH / ACADEMIC
+% ============================================================================
+
+% --- Theorem / definition slide ---------------------------------------------
+%   \theoremslide{frame title}{block type}{theorem name (or empty)}{body}
+%   Uses the theme's block environment (navy header + cloud body).
+\newcommand{\theoremslide}[5]{%
+  \begin{frame}{#1}
+    \begin{block}{\textbf{#2}\ifstrempty{#3}{}{\normalfont\ (#3)}}
+      #4
+    \end{block}
+      #5
+  \end{frame}%
+}
+
+\newcommand{\twotheoremslide}[7]{%
+  \begin{frame}{#1}
+    \begin{block}{\textbf{#2}\ifstrempty{#3}{}{\normalfont\ (#3)}}
+      #4
+    \end{block}
+    \begin{block}{\textbf{#5}\ifstrempty{#6}{}{\normalfont\ (#6)}}
+      #7
+    \end{block}
+  \end{frame}%
+}
+
+% --- Algorithm / pseudocode slide -------------------------------------------
+%   \algoslide{frame title}{explanation (left)}{pseudocode (right)}
+%   Wider monospace code area on the right with a navy left-border accent.
+%   Pseudocode should be written using \textbf{for}, \textbf{if}, etc.;
+%   true verbatim content must be handled inside a regular frame with listings.
+\newcommand{\algoslide}[3]{%
+  \begin{frame}[plain]
+    \polimi@headerbar
+    \begin{tikzpicture}[overlay, remember picture]
+      \fill[polimiCloud]
+        ([xshift=5.5cm]current page.south west)
+        rectangle ([yshift=-2.15cm] current page.north east);
+      \draw[polimiNavy, line width=2pt]
+        ([xshift=5.5cm]current page.south west)
+        -- ([xshift=5.5cm, yshift=-2.15cm]current page.north west);
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \node[anchor=south west, text=polimiNavy] at (0.44, 7.25)
+          {\usebeamerfont{frametitle}#1};
+        \draw[polimiMist, line width=0.5pt] (0.0, 6.85) -- (16.00, 6.85);
+        % Explanation column (left)
+        \node[anchor=north west, text=polimiNavy, align=left,
+              text width=4.5cm, font=\small] at (0.44, 6.60) {#2};
+        % Pseudocode column (right, monospace)
+        \node[anchor=north west, text=polimiNavy, align=left,
+              text width=9.4cm,
+              font=\ttfamily\small] at (5.8, 6.60) {#3};
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+% --- Timeline slide ---------------------------------------------------------
+%   \timelineslide{title}{l1}{d1}{l2}{d2}{l3}{d3}{l4}{d4}
+%   Horizontal timeline with four labelled milestones.
+%   l = milestone label (bold, above line); d = description (below line).
+\newcommand{\timelineslide}[9]{%
+  \begin{frame}[plain]
+    \polimi@headerbar
+    \begin{tikzpicture}[overlay, remember picture]
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \node[anchor=south west, text=polimiNavy] at (0.44, 7.25)
+          {\usebeamerfont{frametitle}#1};
+        \draw[polimiMist, line width=0.5pt] (0.0, 6.85) -- (16.00, 6.85);
+        % Horizontal axis with arrow
+        \draw[polimiNavy, line width=1.5pt, -{Stealth[length=7pt,width=5pt]}]
+          (1.2, 4.5) -- (15.1, 4.5);
+        % Milestone 1  (x = 2.8)
+        \fill[polimiNavy] (2.8, 4.5) circle (0.18);
+        \node[anchor=south, text=polimiNavy, align=center, text width=2.9cm,
+              font=\sffamily\bfseries\small] at (2.8, 4.72) {#2};
+        \node[anchor=north, text=polimiSlate, align=center, text width=2.9cm,
+              font=\small] at (2.8, 4.28) {#3};
+        % Milestone 2  (x = 6.2)
+        \fill[polimiNavy] (6.2, 4.5) circle (0.18);
+        \node[anchor=south, text=polimiNavy, align=center, text width=2.9cm,
+              font=\sffamily\bfseries\small] at (6.2, 4.72) {#4};
+        \node[anchor=north, text=polimiSlate, align=center, text width=2.9cm,
+              font=\small] at (6.2, 4.28) {#5};
+        % Milestone 3  (x = 9.6)
+        \fill[polimiNavy] (9.6, 4.5) circle (0.18);
+        \node[anchor=south, text=polimiNavy, align=center, text width=2.9cm,
+              font=\sffamily\bfseries\small] at (9.6, 4.72) {#6};
+        \node[anchor=north, text=polimiSlate, align=center, text width=2.9cm,
+              font=\small] at (9.6, 4.28) {#7};
+        % Milestone 4  (x = 13.0)
+        \fill[polimiNavy] (13.0, 4.5) circle (0.18);
+        \node[anchor=south, text=polimiNavy, align=center, text width=2.9cm,
+              font=\sffamily\bfseries\small] at (13.0, 4.72) {#8};
+        \node[anchor=north, text=polimiSlate, align=center, text width=2.9cm,
+              font=\small] at (13.0, 4.28) {#9};
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+% ============================================================================
+% PRACTICAL / STRUCTURAL
+% ============================================================================
+
+\ifdefstring{\polimi@lang}{it}{%
+  \def\polimi@appendixtitle{Appendice}%
+  \def\polimi@backuptitle{Slide di supporto}%
+}{%
+  \def\polimi@appendixtitle{Appendix}%
+  \def\polimi@backuptitle{Backup / Extra Slides}%
+}
+
+% --- Appendix section divider -----------------------------------------------
+%   \appendixdivider[custom label]
+%   Like \sectionpage but on the light polimiPanel palette to signal appendix.
+\newcommand{\appendixdivider}[2][\polimi@appendixtitle]{%
+  \begin{frame}[plain, noframenumbering]
+    \begin{tikzpicture}[overlay, remember picture]
+      \fill[polimiPanel]
+        (current page.south west) rectangle (current page.north east);
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \begin{scope}
+          \clip (0,0) rectangle (16,9);
+          \begin{scope}
+            \clip (8.85, 0) circle (7.15);
+            \shade[outer color=polimiMist, inner color=polimiPanel, opacity=0.40]
+              (6.0, 0.0) circle (18.0);
+          \end{scope}
+        \end{scope}
+        \draw[polimiSlate, opacity=0.45, line width=0.35pt] (0, 7.14) -- (16, 7.14);
+        \draw[polimiSlate, opacity=0.45, line width=0.35pt] (0, 5.44) -- (16, 5.44);
+        \draw[polimiSlate, opacity=0.45, line width=0.35pt] (1.68, 0) -- (1.68, 9);
+        \draw[polimiNavy, opacity=0.40, line width=0.55pt]
+          (0.84, 6.29) circle (0.84);
+        \node[anchor=west, text=polimiNavy, align=left] at (4.22, 6.29)
+          {\usebeamerfont{section title}#1};
+        \node[anchor=south east, text=polimiSlate, inner sep=0pt]
+          at (15.65, 0.85)
+          {\usebeamerfont{section number}\textit{#2}};
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+% --- Backup / extra slides marker -------------------------------------------
+%   \backupmarker[custom label]
+%   Dark slide clearly signalling "backup starts here"; noframenumbering so
+%   the main slide count shown in the header bar is not inflated.
+\newcommand{\backupmarker}[1][\polimi@backuptitle]{%
+  \begin{frame}[plain, noframenumbering]
+    \begin{tikzpicture}[overlay, remember picture]
+      \fill[polimiNavyDarkHalfTitle]
+        (current page.south west) rectangle (current page.north east);
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \draw[polimiPaper, opacity=0.25, line width=0.35pt] (0, 5.1) -- (16, 5.1);
+        \draw[polimiPaper, opacity=0.25, line width=0.35pt] (0, 3.4) -- (16, 3.4);
+        \draw[polimiPaper, opacity=0.25, line width=0.35pt] (1.68, 0) -- (1.68, 9);
+        \draw[polimiPaper, opacity=0.40, line width=0.55pt, dashed]
+          (0.84, 4.25) circle (0.84);
+        \node[text=polimiPaper, align=center] at (8, 4.25)
+          {\usebeamerfont{section title}#1};
+        % Dashed border signals "not part of main talk"
+        \draw[polimiPaper, opacity=0.18, line width=1pt, dashed]
+          (0.3, 0.3) rectangle (15.7, 8.7);
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+% --- Contact / author info slide --------------------------------------------
+%   \contactslide{name}{email}{institution}{photo-path}{qr-path}
+%   Navy header strip + structured info block; photo and QR accept empty paths.
+\newcommand{\contactslide}[5]{%
+  \begin{frame}[plain]
+    \begin{tikzpicture}[overlay, remember picture]
+      \fill[polimiPaper]
+        (current page.south west) rectangle (current page.north east);
+      % Navy header strip
+      \fill[polimiNavy]
+        (current page.north west)
+        rectangle ([yshift=-1.8cm]current page.north east);
+      \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
+        \ifpolimi@showlogo
+          \node[anchor=north west, inner sep=0pt] at (0.62, 8.88)
+            {\includegraphics[height=1.5cm]{\polimilogowhite}};
+        \fi
+        % Frame counter (top right of strip)
+        \node[anchor=base east, text=polimiPaper] at (15.5, 8.55)
+          {\usebeamerfont{headerbar}%
+           \insertframenumber/\inserttotalframenumber};
+        % Name
+        \node[anchor=north west, text=polimiNavy,
+              font=\sffamily\fontseries{sb}\selectfont\Large] at (0.79, 6.5)
+          {#1};
+        % Divider
+        \draw[polimiMist, line width=0.5pt] (0.79, 5.85) -- (10.5, 5.85);
+        % Email
+        \node[anchor=north west, text=polimiNavy, font=\small] at (0.79, 5.65)
+          {\textcolor{polimiSlate}{Email}\enskip #2};
+        % Institution
+        \node[anchor=north west, text=polimiNavy, font=\small] at (0.79, 4.95)
+          {\textcolor{polimiSlate}{Institution}\enskip #3};
+        % Photo (upper right of content area)
+        \node[anchor=north east, inner sep=0pt] at (15.5, 6.5)
+          {\polimi@imgbox{#4}{2.9}{4.0}};
+        % QR code (bottom right)
+        \node[anchor=south east, inner sep=0pt] at (15.0, 1.0)
+          {\polimi@imgbox{#5}{2.0}{2.8}};
+      \end{scope}
+    \end{tikzpicture}%
+  \end{frame}%
+}
+
+\endinput

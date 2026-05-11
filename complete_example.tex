@@ -1,0 +1,436 @@
+% complete_example.tex — Politecnico di Milano Beamer theme: complete reference
+% ----------------------------------------------------------------------------
+% This file exercises every slide macro provided by beamerthemepolimi.sty
+% and includes meta-discussion slides that explain the alternative ways of
+% configuring each piece. Use it as a starting point for a new presentation:
+% delete the parts you don't need, keep the layouts that match your talk.
+%
+% Compile with:   xelatex complete_example.tex   (recommended — uses Manrope)
+%             or  lualatex complete_example.tex
+%             or  pdflatex complete_example.tex  (falls back to a generic sans)
+% ----------------------------------------------------------------------------
+
+\documentclass[aspectratio=169]{beamer}
+
+% ---------- Theme options --------------------------------------------------
+% lang=it  → "Sommario" for the TOC, "Grazie per l'attenzione" on the closing
+% lang=en  → "Outline" for the TOC, "Thank you for your attention"
+% showlogo (default true) → logo in header bar / dark slides; pass
+%   showlogo=false to hide it (e.g. when the header text already names the
+%   institution, or for a customer-facing deck without polimi branding).
+\usepackage[lang=en]{beamerthemepolimi}
+% \polimimathmanrope  % use Manrope for math (optional; see beamerthemepolimi.sty)
+
+% ---------- Presentation metadata ------------------------------------------
+\title{Complete\\[0.2ex]Reference}
+% \polimisubtitle is optional — comment it out if you don't want a subtitle.
+\polimisubtitle{Slide layouts, with notes on the optional choices}
+\author{Mario Rossi}
+\date{10.05.2026}
+% \polimiheadertext sets the small text in the centre of the header bar.
+% Pass an empty argument to leave the header centre blank.
+\polimiheadertext{School of Engineering / Complete Reference}
+%\polimiheadertext{}
+
+% ---------- Section / subsection openings ----------------------------------
+% TWO MUTUALLY EXCLUSIVE OPTIONS for what happens at \section{...}:
+%
+%   (A) \AtBeginSection[]{\frame{\sectionpage}}
+%       → Big navy section-divider slide with the section number.
+%
+%   (B) \AtBeginSection[]{\tocslide[currentsection]}
+%       → Repeat the table of contents with the current section highlighted.
+%
+% Pick ONE. You can also do both manually inside specific sections by
+% calling \frame{\sectionpage} or \tocslide[currentsection] yourself.
+\AtBeginSection[]{\frame{\sectionpage}}
+%\AtBeginSection[]{\tocslide[currentsection]}
+
+% Subsection openings — comment this out if you don't use \subsection.
+\AtBeginSubsection[]{\frame{\subsectionpage}}
+
+\begin{document}
+
+% ============================================================================
+% 1. TITLE SLIDE
+% ============================================================================
+% Use [plain, noframenumbering] so the title page has no header bar and is
+% not counted in the total slide number.
+\begin{frame}[plain, noframenumbering]
+  \titlepage
+\end{frame}
+
+% ============================================================================
+% 2. TABLE OF CONTENTS (full)
+% ============================================================================
+% A full TOC right after the title slide is a common opening. \tocslide
+% with no argument shows everything; with [currentsection] it greys out
+% the other sections.
+\tocslide
+
+% ============================================================================
+% 3. INTRODUCTION SECTION
+% ============================================================================
+\section{Introduction}
+  \setcounter{framenumber}{1}   % start counting from 1 after the title page
+
+% --- Meta-discussion: how to open a section -------------------------------
+\asymtextslide{Section open}{%
+  Two ways to mark a new \texttt{\textbackslash section}.%
+}{%
+  \textbf{Option A — big navy divider} (this deck's choice):\\
+  \texttt{\textbackslash AtBeginSection\{\textbackslash frame\{\textbackslash sectionpage\}\}}\\[0.8em]
+  \textbf{Option B — repeat the TOC} highlighting the current section:\\
+  \texttt{\textbackslash AtBeginSection\{\textbackslash tocslide[currentsection]\}}\\[0.8em]
+  Pick one in the preamble. You can also call either macro manually inside
+  a specific section, ignoring the \texttt{\textbackslash AtBeginSection} hook.%
+}
+
+% --- Standard content slide -----------------------------------------------
+\begin{frame}{A standard content slide}
+  Body text uses Manrope at the same size as the original PowerPoint
+  template. Bullets are aligned with the Politecnico di Milano branding:
+  \begin{itemize}
+    \item first point of the list
+    \item second point, with a sub-list
+      \begin{itemize}
+        \item detail one
+        \item detail two
+      \end{itemize}
+    \item third point
+  \end{itemize}
+\end{frame}
+
+% --- Two symmetric columns -------------------------------------------------
+\begin{frame}{Two symmetric columns}
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+      \textbf{Left column}\\[0.5em]
+      A standard Beamer \texttt{columns} environment works as expected
+      inside a normal frame. Use this when both sides carry equal weight.
+    \column{0.48\textwidth}
+      \textbf{Right column}\\[0.5em]
+      For an asymmetric narrow-left / wide-right split (Layout 12) use
+      \texttt{\textbackslash asymtextslide} instead — see the next slides.
+  \end{columns}
+\end{frame}
+
+% ============================================================================
+% 4. ASYMMETRIC LAYOUTS
+% ============================================================================
+\subsection{Asymmetric layouts}
+
+% --- Asymmetric two-column: text + text -----------------------------------
+% \asymtextslide{title}{narrow-left text}{wide-right text}
+% Keep the title short — the left column is only ~2.84 cm wide.
+\asymtextslide{Asym.\ text}{%
+  Short framing remark on the left.%
+}{%
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+  tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+  veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+  velit esse cillum dolore eu fugiat nulla pariatur.%
+}
+
+% --- Asymmetric two-column: text + image ----------------------------------
+% The right column accepts arbitrary content — including a \begin{figure}.
+\asymtextslide{Asym.\ image}{%
+  The right column can hold an image instead of text.%
+}{%
+  \begin{figure}
+    \textbf{ }\\[-5em]
+    \includegraphics[width=0.5\textwidth]{figures/qrcode.pdf}
+  \end{figure}%
+}
+
+% --- Text + image right (Layout 15) ---------------------------------------
+% Pass {} as the image path to render the dashed "Image placeholder" box.
+\imagerightslide{Text on the left, image on the right}{%
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+  tempor incididunt ut labore et dolore magna aliqua.%
+}{}  % empty path → placeholder
+
+% --- Image left + text right (Layout 16) ----------------------------------
+\imageleftslide{Image on the left, text on the right}{%
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+  tempor incididunt ut labore et dolore magna aliqua.%
+}{}
+
+% --- Text + image with caption (Layout 17) --------------------------------
+\imagecaptionslide{Text + captioned image}{%
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+  tempor incididunt ut labore et dolore magna aliqua.%
+}{}{Figure caption goes here}
+
+% --- Text + two stacked captioned images (Layout 18) ----------------------
+\twoimagecaptionslide{Text + two captioned images}{%
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+  tempor incididunt ut labore et dolore magna aliqua.%
+}{}{First caption}{}{Second caption}
+
+% ============================================================================
+% 5. CONTENT LAYOUTS
+% ============================================================================
+\section{Content Layouts}
+
+% --- Three symmetric columns ----------------------------------------------
+\threecolslide{Three symmetric columns}{%
+  \textbf{Column A}\\[0.4em]
+  First approach or concept goes here.
+  \begin{itemize}
+    \item Advantage one
+    \item Advantage two
+  \end{itemize}
+}{%
+  \textbf{Column B}\\[0.4em]
+  Second approach for comparison.
+  \begin{itemize}
+    \item Advantage one
+    \item Advantage two
+  \end{itemize}
+}{%
+  \textbf{Column C}\\[0.4em]
+  Third approach closes the comparison.
+  \begin{itemize}
+    \item Advantage one
+    \item Advantage two
+  \end{itemize}
+}
+
+% --- Full-bleed image: untitled vs titled ---------------------------------
+% Pass {} for the image path to render a placeholder.
+\fullbleedslide{}                                % no title overlay
+\fullbleedslide[Deep-dive: System Architecture]{} % title overlay (navy strip)
+
+% --- Quote / highlight slide: every option ---------------------------------
+% Available keys for \quoteslide[...]{quote}{attribution}:
+%   image=path        → background image (omit for plain polimiCloud bg)
+%   desaturate=0..1   → white overlay opacity (0 none, 1 fully white)
+%   navyshade=0..1    → polimiNavy overlay opacity
+%   textcolor=color   → e.g. polimiNavy (default) or polimiPaper for white
+% The attribution argument can be {} to omit the dash and credit line.
+
+% Plain light background, with attribution
+\quoteslide{``Science is the poetry of reality.''}{Richard Dawkins}
+
+% Plain light background, no attribution
+\quoteslide{``Science is the poetry of reality.''}{}
+
+% Image background, lightly desaturated
+\quoteslide[image=figures/wallpaper.png, desaturate=0.6]
+  {``Science is the poetry of reality.''}{Richard Dawkins}
+
+% Image with navy shade and white text
+\quoteslide[image=figures/wallpaper.png, navyshade=0.55, textcolor=polimiPaper]
+  {``Science is the poetry of reality.''}{Richard Dawkins}
+
+% Navy shade only (no image), white text
+\quoteslide[navyshade=0.85, textcolor=polimiPaper]
+  {``Science is the poetry of reality.''}{Richard Dawkins}
+
+% Heavy navy shade on image, white text, no attribution
+\quoteslide[image=figures/wallpaper.png, navyshade=0.85, textcolor=polimiPaper]
+  {``Science is the poetry of reality.''}{}
+
+% --- Big number / statistics callout --------------------------------------
+% \bignumberslide{title}{n1}{cap1}{n2}{cap2}{n3}{cap3}
+\bignumberslide{Key Impact Metrics}{%
+  78\%}{Reduction in inference latency after model distillation}{%
+  123.4M}{Parameters in the compressed architecture}{%
+  567 mln}{Total training tokens across all fine-tuning stages}
+
+% ============================================================================
+% 6. MATH / ACADEMIC
+% ============================================================================
+\section{Math and Academic}
+
+% --- Theorem / definition slide -------------------------------------------
+% \theoremslide{frame title}{block type}{name (or empty)}{body}{commentary (or empty)}
+% Block type can be Theorem, Lemma, Proposition, Definition, Corollary, etc.
+% The fifth argument is rendered below the block — leave it empty for none.
+
+% Single block, no commentary
+\theoremslide{Convergence Analysis}{Theorem}{Banach Fixed-Point}{%
+  Let $(X, d)$ be a non-empty complete metric space and
+  $T : X \to X$ a contraction mapping with constant $q \in [0,1)$.
+  Then $T$ has a unique fixed point $x^* \in X$, and for any
+  $x_0 \in X$ the sequence $x_{n+1} = T(x_n)$ converges to $x^*$.
+}{}
+
+% Single block, with commentary
+\theoremslide{Convergence Analysis}{Theorem}{Banach Fixed-Point}{%
+  Let $(X, d)$ be a non-empty complete metric space and
+  $T : X \to X$ a contraction mapping with constant $q \in [0,1)$.
+  Then $T$ has a unique fixed point, and the iteration
+  $x_{n+1} = T(x_n)$ converges to it for every starting $x_0$.
+}{%
+  Use the commentary slot to state the corollary, sketch the proof idea,
+  or comment on the implications for the talk.%
+}
+
+% Definition variant — same macro, different block type
+\theoremslide{Key Definition}{Definition}{Lipschitz Continuity}{%
+  A function $f : \mathbb{R}^n \to \mathbb{R}^m$ is \emph{Lipschitz continuous}
+  with constant $L \geq 0$ if
+  \[
+    \|f(x) - f(y)\| \leq L\,\|x - y\| \quad \forall\, x, y \in \mathbb{R}^n.
+  \]
+}{}
+
+% --- Two-theorem slide: pair two related blocks side by side --------------
+% \twotheoremslide{title}{type1}{name1}{body1}{type2}{name2}{body2}
+\twotheoremslide{Definition + Theorem}{Definition}{Lipschitz Continuity}{%
+  A function $f$ is \emph{Lipschitz} with constant $L$ if
+  $\|f(x) - f(y)\| \leq L\,\|x - y\|$ for all $x, y$.
+}{Theorem}{Banach Fixed-Point}{%
+  Every contraction mapping ($L < 1$) on a complete metric space has a
+  unique fixed point, found by iterating $x_{n+1} = T(x_n)$.
+}
+
+% Experiment on the symbols
+\theoremslide{Symbols test}{Theorem}{Symbol rendering}{%
+  $$
+    \lim\limits_{x \to 0} \frac{\sin x}{x} = 1, \quad
+    \int\limits_\alpha^\beta e^{-t^2} dt = \dots, \quad
+    \sum_{n=1}^\infty \frac{1}{n^2} = \frac{\pi^2}{6}.
+  $$
+}{It is possible to use the command \texttt{\textbackslash polimimathmanrope} in the preamble to set Manrope as the math font, which gives a more cohesive look. Otherwise, a generic sans-serif math font is used by default.}
+
+% --- Algorithm / pseudocode slide -----------------------------------------
+% \algoslide{title}{explanation (left)}{pseudocode (right, monospace)}
+% Use \\ for line breaks and \textbf{...} for keywords. For real verbatim
+% code (listings / minted), use a regular frame with the relevant package.
+\algoslide{Gradient Descent}{%
+  A first-order iterative optimisation algorithm for finding a local
+  minimum of a differentiable function.\\[0.8em]
+  \textbf{Complexity:}\\
+  $\mathcal{O}(n \cdot k)$ per epoch, where $n$ is the number of
+  parameters and $k$ the number of samples.
+}{%
+  \textbf{Input:} $f$, $\nabla f$, $\alpha$, $x_0$, $T$\\
+  \textbf{Output:} approximate minimiser $x^*$\\[0.4em]
+  $t \leftarrow 0$\\
+  \textbf{while} $t < T$ \textbf{do}\\
+  \quad $g \leftarrow \nabla f(x_t)$\\
+  \quad $x_{t+1} \leftarrow x_t - \alpha \cdot g$\\
+  \quad $t \leftarrow t + 1$\\
+  \textbf{end while}\\
+  \textbf{return} $x_t$%
+}
+
+% --- Timeline slide --------------------------------------------------------
+% \timelineslide{title}{l1}{d1}{l2}{d2}{l3}{d3}{l4}{d4}
+\timelineslide{Project Roadmap}{%
+  Q1 2025}{%
+  Literature review and problem formalisation}{%
+  Q2 2025}{%
+  Dataset collection and baseline experiments}{%
+  Q3 2025}{%
+  Model training and ablation studies}{%
+  Q4 2025}{%
+  Paper submission and open-source release}
+
+% ============================================================================
+% 7. PRACTICAL SLIDES
+% ============================================================================
+\section{Practical Slides}
+
+% --- Contact / author info slide ------------------------------------------
+% \contactslide{name}{email}{institution}{photo path}{QR path}
+% Empty paths render the dashed placeholder box for that asset.
+\contactslide{%
+  Prof.\ Mario Rossi%
+}{%
+  mario.rossi@polimi.it%
+}{%
+  Politecnico di Milano --- DEIB%
+}{%
+  figures/genericPropic.png%
+}{%
+  figures/qrcode.pdf%
+}
+
+% ============================================================================
+% 8. CONCLUSIONS + CLOSING
+% ============================================================================
+\section{Conclusions}
+
+\begin{frame}{Wrap-up}
+  Final remarks before the closing slide:
+  \begin{itemize}
+    \item key takeaway 1
+    \item key takeaway 2
+    \item key takeaway 3
+  \end{itemize}
+\end{frame}
+
+% --- Closing slide ---------------------------------------------------------
+% \closingframe with no argument uses the language-appropriate default
+% ("Thank you for your attention" / "Grazie per l'attenzione").
+% Pass a custom string to override:
+%   \closingframe[Questions?]
+\closingframe
+
+% ============================================================================
+% 9. BIBLIOGRAPHY
+% ============================================================================
+% Two variants of the bibliography slide are provided.
+% Use \bibslide      → references on the left, contacts on the right
+% Use \bibslideimg   → references on the left, image (e.g. QR) + contacts
+% Pick whichever fits your talk; both are shown here for reference.
+
+\bibslide{%
+  \begin{thebibliography}{99}
+    \bibitem{ref1} A.~Author, \emph{Title of paper}, Journal, 2024.
+    \bibitem{ref2} B.~Other, \emph{Another work}, Conf., 2023.
+  \end{thebibliography}
+}{%
+  \quad\textbf{Contacts}\\[0.5em]
+  e-mail: \texttt{mario.rossi@polimi.it}%
+}
+
+\bibslideimg{%
+  \begin{thebibliography}{99}
+    \bibitem{ref3} C.~Author, \emph{One more reference}, Journal, 2025.
+  \end{thebibliography}
+}{%
+  figures/qrcode.pdf
+}{%
+  \quad\textbf{Contacts}\\[0.5em]
+  e-mail: \texttt{mario.rossi@polimi.it}%
+}
+
+% ============================================================================
+% 10. APPENDIX / BACKUP
+% ============================================================================
+% \backupmarker        — dark slide signalling the main talk has ended
+% \appendixdivider[..] — light divider between appendix sub-topics
+% Both already use [noframenumbering] internally; ALSO add [noframenumbering]
+% to every backup frame so the header bar's slide counter stays frozen at
+% the last main-talk slide number.
+
+\backupmarker
+
+% \appendixdivider[label]{number}
+% The number is passed by hand (use A, B, C, ... or 1, 2, 3, ...).
+\appendixdivider[An appendix]{A}
+
+\begin{frame}[noframenumbering]{Supplementary: Additional Ablation}
+  This frame is part of the backup section. It is not counted in the main
+  slide total because \texttt{\textbackslash backupmarker} was inserted
+  beforehand and this frame uses \texttt{[noframenumbering]}.
+
+  \begin{block}{Tip}
+    Apply \texttt{[noframenumbering]} to every backup frame so the header
+    bar counter stays frozen at the last main-talk slide number.
+  \end{block}
+\end{frame}
+
+\appendixdivider[Extra Results]{B}
+
+\begin{frame}[noframenumbering]{Supplementary: Extra Numbers}
+  Another backup frame, in a second appendix block.
+\end{frame}
+
+\end{document}
