@@ -5,6 +5,8 @@ PowerPoint template. Colours, fonts, slide dimensions and the geometry of
 every layout are taken directly from the source `.pptx` so the LaTeX slides
 match the corporate look without leaving LaTeX.
 
+Remember to install Manrope in the fonts folder (download at https://github.com/davelab6/manrope/tree/master/ttf%20format%20(legacy)) and compile using xelatex (otherwise Manrope is not used).
+
 ## Repository layout
 
 ```
