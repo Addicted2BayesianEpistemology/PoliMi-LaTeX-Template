@@ -11,15 +11,19 @@
 % Usage:
 %   \documentclass[aspectratio=169]{beamer}
 %   \usetheme{polimi}
+%   \usetheme[structure=deib]{polimi}      % the style of a department, school or pole
 % ----------------------------------------------------------------------------
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamerthemepolimi}[2025/01/02 v2.0 Politecnico di Milano Beamer theme]
+\ProvidesPackage{beamerthemepolimi}[2026/11/16 v2.1 Politecnico di Milano Beamer theme]
 
 \RequirePackage{kvoptions}
 \SetupKeyvalOptions{family=polimi,prefix=polimi@}
 \DeclareStringOption[en]{lang}
 \DeclareBoolOption[true]{showlogo}
+% structure = the Politecnico style of the brand kit: ateneo (default) | a department | a school | a pole (see
+% "Structures" below for the codes)
+\DeclareStringOption[ateneo]{structure}
 \ProcessKeyvalOptions*
 
 \RequirePackage{tikz}
@@ -53,6 +57,126 @@
 \definecolor{polimiPaper}{HTML}{FFFFFF}
 \definecolor{polimiBibBg}{HTML}{f6f4f1}
 
+% ---------- Structures (the option structure=...) ----------------------------
+% The brand kit of the Politecnico gives every department, school and territorial pole its own variant of the
+% identity: a colour (Brand guidelines 5.0, pp. 53-55, and the colour schemes of the official 2024 PowerPoint
+% templates) and a logo (the Politecnico flag + the name of the structure, logos/structures/). The theme follows the
+% templates of the kit:
+%   ateneo        navy title / section / closing pages, the white flag            (the default: the theme as it was)
+%   departments   the title, section, closing and contact pages in the colour of the department, navy text and the
+%                 blue logo of the department; subsection and appendix pages in a light tint of the colour
+%                   dabc  Architecture, Built Environment and Construction Engineering   (Metropolitan Purple #909FDE)
+%                   daer  Aerospace Science and Technology                               (Space Blue          #6698FF)
+%                   dastu Architecture and Urban Studies                                 (Urban Lavender      #96AEEF)
+%                   dcmc  Chemistry, Materials and Chemical Engineering "Giulio Natta"   (Reactive Lilac      #A8BEF2)
+%                   ddes  Design                                                         (Smart Mint          #7BAEBC)
+%                   deib  Electronics, Information and Bioengineering                    (Silicon Green       #8DB9CD)
+%                   deng  Energy                                                         (Sustainable Sage    #67B2C6)
+%                   dfis  Physics                                                        (Photonic Azure      #73A1F7)
+%                   dica  Civil and Environmental Engineering                            (Subsoil Amethyst    #8292CB)
+%                   dig   Management, Economics and Industrial Engineering               (Management Teal     #6C98BE)
+%                   dmat  Mathematics                                                    (Binary Cyan         #73A2D1)
+%                   dmec  Mechanical Engineering                                         (Steel Indigo        #5C9BE0)
+%   schools       navy title and section pages with the circles in the colour of the school, the white logo of the
+%                 school; subsection and appendix pages in the colour of the school
+%                   auic       Architecture Urban Planning Construction Engineering          (Matte Red  #FF8C8C)
+%                   design     Design                                                        (Acid Green #AEDD00)
+%                   ingcat     Civil, Environmental and Land Management Engineering          (Alpha Blue #2CB7FF)
+%                   ingindinf  Industrial and Information Engineering                        (Beta Blue  #0BA4FF)
+%   poles         the colours of the Ateneo (Blue Heritage) with the logo of the campus
+%                   cremona  lecco  mantova  piacenza
+% The logo follows lang= (it: the Italian logo, en: the English one; ddes, deng, dfis and design exist in Italian
+% only). Colours for your own slides: polimiAccent (the colour of the structure; navy for ateneo and the poles),
+% polimiAccentDark, polimiCover (the ground of the title / section / closing pages), polimiOnCover (the text on it).
+% \polimistructurename is the name of the structure in the language of the deck (empty for ateneo); it is the default
+% header text of a structure's deck.
+\newif\ifpolimi@struct      % a structure other than ateneo
+\newif\ifpolimi@lightcover  % title / section / closing pages on a light ground (departments): navy text, blue logo
+\def\polimi@coverdark{0.7}  % the black fade over the title page
+\def\polimi@decoopacity{0.55}% the two circles of the title page
+\def\polimi@domeopacity{0.30}% the dome of the section page
+\def\polimistructurename{}
+\colorlet{polimiCover}{polimiNavy}
+\colorlet{polimiOnCover}{polimiPaper}
+\colorlet{polimiCoverDeco}{polimiSteel}
+\colorlet{polimiPanelDeco}{polimiMist}% the dome of the appendix page
+\colorlet{polimiAccent}{polimiNavy}
+\colorlet{polimiAccentDark}{polimiNavyDarkHalfTitle}
+% \polimi@defstructure{code}{kind: dept|school|pole}{colour}{tint (subsection page)}{dark shade}{Italian name}{English name}
+\newcommand*{\polimi@defstructure}[7]{\@namedef{polimi@st@#1}{\polimi@usestructure{#1}{#2}{#3}{#4}{#5}{#6}{#7}}}
+\polimi@defstructure{dabc}{dept}{909FDE}{BCC5EB}{4962C9}%
+  {Dipartimento di Architettura, Ingegneria delle Costruzioni e Ambiente Costruito}%
+  {Department of Architecture, Built Environment and Construction Engineering}
+\polimi@defstructure{daer}{dept}{6698FF}{A3C1FE}{0C5BFF}%
+  {Dipartimento di Scienze e Tecnologie Aerospaziali}{Department of Aerospace Science and Technology}
+\polimi@defstructure{dastu}{dept}{96AEEF}{C0CEF5}{416CE2}%
+  {Dipartimento di Architettura e Studi Urbani}{Department of Architecture and Urban Studies}
+\polimi@defstructure{dcmc}{dept}{A8BEF2}{B8CAF4}{84A3EC}%
+  {Dipartimento di Chimica, Materiali e Ingegneria Chimica ``Giulio Natta''}%
+  {Department of Chemistry, Materials and Chemical Engineering ``Giulio Natta''}
+\polimi@defstructure{ddes}{dept}{7BAEBC}{AFCED6}{4E8A9A}{Dipartimento di Design}{Department of Design}
+\polimi@defstructure{deib}{dept}{8DB9CD}{BAD5E1}{5094B2}%
+  {Dipartimento di Elettronica, Informazione e Bioingegneria}{Department of Electronics, Information and Bioengineering}
+\polimi@defstructure{deng}{dept}{67B2C6}{A3D0DC}{3D8EA4}{Dipartimento di Energia}{Department of Energy}
+\polimi@defstructure{dfis}{dept}{73A1F7}{AAC6FA}{1D67F2}{Dipartimento di Fisica}{Department of Physics}
+\polimi@defstructure{dica}{dept}{8292CB}{B4BDDF}{495FB0}%
+  {Dipartimento di Ingegneria Civile e Ambientale}{Department of Civil and Environmental Engineering}
+\polimi@defstructure{dig}{dept}{6C98BE}{A6C1D8}{44729A}%
+  {Dipartimento di Ingegneria Gestionale}{Department of Management, Economics and Industrial Engineering}
+\polimi@defstructure{dmat}{dept}{73A2D1}{AAC7E3}{3C79B6}{Dipartimento di Matematica}{Department of Mathematics}
+\polimi@defstructure{dmec}{dept}{5C9BE0}{9DC3EC}{2572C7}{Dipartimento di Meccanica}{Department of Mechanical Engineering}
+\polimi@defstructure{auic}{school}{FF8C8C}{FF8C8C}{FF8C8C}%
+  {Scuola di Architettura Urbanistica Ingegneria delle Costruzioni}%
+  {School of Architecture Urban Planning Construction Engineering}
+\polimi@defstructure{design}{school}{AEDD00}{AEDD00}{566E00}{Scuola del Design}{School of Design}
+\polimi@defstructure{ingcat}{school}{2CB7FF}{2CB7FF}{2CB7FF}%
+  {Scuola di Ingegneria Civile, Ambientale e Territoriale}{School of Civil, Environmental and Land Management Engineering}
+\polimi@defstructure{ingindinf}{school}{0BA4FF}{0BA4FF}{0BA4FF}%
+  {Scuola di Ingegneria Industriale e dell'Informazione}{School of Industrial and Information Engineering}
+\polimi@defstructure{cremona}{pole}{102C53}{DDE2E8}{0B1F3A}{Polo territoriale di Cremona}{Cremona Campus}
+\polimi@defstructure{lecco}{pole}{102C53}{DDE2E8}{0B1F3A}{Polo territoriale di Lecco}{Lecco Campus}
+\polimi@defstructure{mantova}{pole}{102C53}{DDE2E8}{0B1F3A}{Polo territoriale di Mantova}{Mantova Campus}
+\polimi@defstructure{piacenza}{pole}{102C53}{DDE2E8}{0B1F3A}{Polo territoriale di Piacenza}{Piacenza Campus}
+% the logos that exist in Italian only
+\def\polimi@itonly{,ddes,deng,dfis,design,}
+\newcommand*{\polimi@usestructure}[7]{%
+  \polimi@structtrue
+  \definecolor{polimiAccent}{HTML}{#3}%
+  \definecolor{polimiAccentDark}{HTML}{#5}%
+  \ifdefstring{\polimi@lang}{it}{\def\polimistructurename{#6}}{\def\polimistructurename{#7}}%
+  \ifdefstring{\polimi@lang}{it}{\def\polimi@logolang{it}}{\def\polimi@logolang{en}}%
+  \def\polimi@tmp##1,#1,##2\@nil{\ifx\relax##2\relax\else\def\polimi@logolang{it}\fi}%
+  \expandafter\polimi@tmp\polimi@itonly,#1,\@nil
+  \edef\polimi@logobase{logos/structures/#1-\polimi@logolang}%
+  \ifstrequal{#2}{dept}{%
+    \polimi@lightcovertrue
+    \colorlet{polimiCover}{polimiAccent}%
+    \colorlet{polimiOnCover}{polimiNavy}%
+    \colorlet{polimiCoverDeco}{polimiPaper}%
+    \colorlet{polimiPanelDeco}{polimiPaper}%
+    \definecolor{polimiPanel}{HTML}{#4}%
+    \def\polimi@coverdark{0}%
+    \def\polimi@decoopacity{0.45}%
+    \def\polimi@domeopacity{0.45}%
+  }{}%
+  \ifstrequal{#2}{school}{%
+    \colorlet{polimiCoverDeco}{polimiAccent}%
+    \colorlet{polimiPanelDeco}{polimiPaper}%
+    \definecolor{polimiPanel}{HTML}{#4}%
+    \def\polimi@decoopacity{1}%
+    \def\polimi@domeopacity{0.85}%
+  }{}%
+}
+\ifdefstring{\polimi@structure}{ateneo}{}{%
+  \ifcsdef{polimi@st@\polimi@structure}{%
+    \csname polimi@st@\polimi@structure\endcsname
+  }{%
+    \PackageWarning{beamerthemepolimi}{Unknown structure=\polimi@structure; using the style of the Ateneo.
+      Known: ateneo, dabc, daer, dastu, dcmc, ddes, deib, deng, dfis, dica, dig, dmat, dmec, auic, design, ingcat,
+      ingindinf, cremona, lecco, mantova, piacenza}%
+  }%
+}
+
 % ---------- Fonts ----------------------------------------------------------
 \ifpolimi@xeorlua
   \RequirePackage{fontspec}
@@ -83,6 +207,25 @@
   \RequirePackage[T1]{fontenc}
   \RequirePackage{lmodern}
   \renewcommand{\familydefault}{\sfdefault}
+\fi
+
+% ---------- Word spaces in TikZ nodes ----------------------------------------
+% A node with `text width` or `align` sets \spaceskip=.3333em and \xspaceskip=.5em in the font that is current when
+% the node STARTS (the body font); the theme changes the size inside the node text (\usebeamerfont{title} ...), so a
+% 34pt title kept the word spaces of 11pt text ("A title with several words" printed almost without spaces), with
+% every engine. After each font change, a \spaceskip with no stretch and no shrink (only TikZ sets one like that) is
+% measured again in the new font. Ordinary text (\spaceskip = 0) and a \spaceskip set by other code are left alone.
+\newcommand*{\polimi@respace}{%
+  \ifdim\spaceskip>\z@
+    \ifdim\gluestretch\spaceskip=\z@
+      \ifdim\glueshrink\spaceskip=\z@
+        \spaceskip.3333em\relax
+        \ifdim\xspaceskip>\z@\xspaceskip.5em\relax\fi
+      \fi
+    \fi
+  \fi}
+\ifdefined\AddToHook
+  \AddToHook{selectfont}{\polimi@respace}
 \fi
 
 % ---------- Math fonts -----------------------------------------------------
@@ -120,9 +263,57 @@
 }
 
 % ---------- Logos ----------------------------------------------------------
+% \polimilogowhite  the logo on dark grounds  (title page, closing strip of the contact slide)   white flag
+% \polimilogodark   the logo on light grounds (bibliography pages; the title page of a department) blue flag
+% \polimilogotipo   the logotype of the header bar                                                  POLITECNICO DI MILANO
+% With structure=... the first two are the white / blue logo of the structure. \renewcommand{\polimilogowhite}{path}
+% (after \usetheme) or \newcommand before it puts another picture there.
+\ifpolimi@struct
+  \providecommand{\polimilogodark}{\polimi@logobase-blue.pdf}
+  \providecommand{\polimilogowhite}{\polimi@logobase-white.pdf}
+\fi
 \providecommand{\polimilogodark}{logos/Bandiera_blu.pdf}
 \providecommand{\polimilogowhite}{logos/Bandiera_Bianco.pdf}
 \providecommand{\polimilogotipo}{logos/Logotipo_Nero.pdf}
+% the height of the big logo (title page, bibliography pages, contact strip): the flag 1.5 cm, the wider logo of a
+% structure 0.9 cm (as in the PowerPoint templates of the kit)
+\ifpolimi@struct\def\polimi@biglogoht{0.9cm}\else\def\polimi@biglogoht{1.5cm}\fi
+% the big logo of the title page: white on the dark grounds, blue on the light ground of a department
+\newcommand*{\polimi@coverlogo}{\ifpolimi@lightcover\polimilogodark\else\polimilogowhite\fi}
+
+% The logo PER PLACE (preamble commands; the last one wins):
+%   \polimititlelogo[height]{what}  the title page and the strip of the contact slide
+%   \polimibarlogo[height]{what}    the upper-left corner of the slides: the logotype of the header bar, and the flag
+%                                   of the bibliography pages
+%       what = default  the logo the theme puts there (white flag / logotype / blue flag, or the structure's logo)
+%              none     no logo in that place
+%              a path   that picture
+%       height: the height of the logo it replaces unless given (title 1.5 cm, 0.9 cm for a structure; header bar
+%               0.3 cm; bibliography 1.5 / 0.9 cm); a height given to \polimibarlogo is used on both of its pages
+%   \poliminologo                   no logo anywhere (the same as showlogo=false); nothing brings it back
+\newcommand*{\polimi@setplace}[3]{% {place}{height}{what}; an empty what = default
+  \ifx\relax#3\relax\@namedef{polimi@logo@#1}{default}\else\@namedef{polimi@logo@#1}{#3}\fi
+  \@namedef{polimi@logo@#1@ht}{#2}}
+\polimi@setplace{title}{}{default}
+\polimi@setplace{bar}{}{default}
+\newcommand*{\polimititlelogo}[2][]{\polimi@setplace{title}{#1}{#2}}
+\newcommand*{\polimibarlogo}[2][]{\polimi@setplace{bar}{#1}{#2}}
+\newcommand*{\poliminologo}{\polimi@showlogofalse}
+% \polimi@placelogo{place}{default picture}{default height}: the picture of that place (nothing for none)
+\newcommand*{\polimi@placelogo}[3]{%
+  \ifcsstring{polimi@logo@#1}{none}{}{%
+    \edef\polimi@pl@ht{\csname polimi@logo@#1@ht\endcsname}%
+    \ifx\polimi@pl@ht\@empty\def\polimi@pl@ht{#3}\fi
+    \ifcsstring{polimi@logo@#1}{default}%
+      {\includegraphics[height=\polimi@pl@ht]{#2}}%
+      {\includegraphics[height=\polimi@pl@ht]{\csname polimi@logo@#1\endcsname}}}}
+% \polimi@logonode{place}{x}{y}{default picture}{default height}: the node of the logo, its upper-left corner at
+% (x, y) in cm (inside a page scope); no node with showlogo=false or what = none
+\newcommand*{\polimi@logonode}[5]{%
+  \ifpolimi@showlogo
+    \ifcsstring{polimi@logo@#1}{none}{}{%
+      \node[anchor=north west, inner sep=0pt] at (#2, #3) {\polimi@placelogo{#1}{#4}{#5}};}%
+  \fi}
 
 % ---------- Beamer base setup ----------------------------------------------
 \useinnertheme{default}
@@ -170,10 +361,12 @@
     % Vertical bg gradient: black at top → navy at bottom (Layout 25 bg)
     \shade[bottom color=polimiNavy, top color=black]
       (current page.south west) rectangle (current page.north east);
-    \fill[polimiNavy]
+    \fill[polimiCover]
       (current page.south west) rectangle (current page.north east);
-    \fill[black, path fading=south, opacity=0.7]
-      (current page.south west) rectangle (current page.north east);
+    \ifpolimi@lightcover\else
+      \fill[black, path fading=south, opacity=\polimi@coverdark]
+        (current page.south west) rectangle (current page.north east);
+    \fi
       \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
       % Decorative circles with alpha gradient (origin at the corner of each
       % circle's bounding box, fading to transparent at the far side).
@@ -185,34 +378,31 @@
         %   (12.55, 7.89) circle (2.63);
         % \fill[polimiSteel, path fading=polimi fade, opacity=0.95]
         %   (12.55, 2.62) circle (2.63);
-        \fill[polimiSteel, path fading=polimi fade, fading angle=315, opacity=0.55]
+        \fill[polimiCoverDeco, path fading=polimi fade, fading angle=315, opacity=\polimi@decoopacity]
           (12.55, 7.89) circle (2.63);
-        \fill[polimiSteel, path fading=polimi fade, fading angle=135, opacity=0.55]
+        \fill[polimiCoverDeco, path fading=polimi fade, fading angle=135, opacity=\polimi@decoopacity]
           (12.55, 2.62) circle (2.63);
       \end{scope}
       % Boundary lines
       \draw[polimiPaper, opacity=0.30, line width=0.3pt] (0, 5.26) -- (16, 5.26);
       \draw[polimiPaper, opacity=0.30, line width=0.3pt] (9.92, 0) -- (9.92, 9);
       \draw[polimiPaper, opacity=0.30, line width=0.3pt] (15.18, 0) -- (15.18, 9);
-      % Logo
-      \ifpolimi@showlogo
-        \node[anchor=north west, inner sep=0pt] at (0.62, 8.6)
-          {\includegraphics[height=1.5cm]{\polimilogowhite}};
-      \fi
+      % Logo (\polimititlelogo)
+      \polimi@logonode{title}{0.62}{8.6}{\polimi@coverlogo}{\polimi@biglogoht}%
       % Optional subtitle
       \ifdefempty{\polimi@subtitle}{}{%
-        \node[anchor=south west, text=polimiPaper, align=left,
+        \node[anchor=south west, text=polimiOnCover, align=left,
               text width=8.88cm] at (0.79, 5.40)
           {\usebeamerfont{subtitle}\polimi@subtitle};%
       }
       % Title
-      \node[anchor=south west, text=polimiPaper, align=left,
+      \node[anchor=south west, text=polimiOnCover, align=left,
             text width=8.88cm] at (0.79, 2.21)
         {\usebeamerfont{title}\inserttitle};
       % Date | Author
-      \node[anchor=base west, text=polimiPaper] at (0.79, 0.79)
+      \node[anchor=base west, text=polimiOnCover] at (0.79, 0.79)
         {\usebeamerfont{date}\insertdate
-         \hspace{0.4em}\textcolor{polimiPaper!60}{$|$}\hspace{0.4em}
+         \hspace{0.4em}\textcolor{polimiOnCover!60}{$|$}\hspace{0.4em}
          \usebeamerfont{author}\insertauthor};
     \end{scope}
   \end{tikzpicture}%
@@ -220,15 +410,17 @@
 
 % ---------- Header bar -----------------------------------------------------
 \newcommand{\polimiheadertext}[1]{\def\polimi@headertext{#1}}
-\def\polimi@headertext{Campo facoltativo e personalizzabile}
+\ifpolimi@struct
+  \def\polimi@headertext{\polimistructurename}
+\else
+  \def\polimi@headertext{Campo facoltativo e personalizzabile}
+\fi
 
 \newcommand{\polimi@headerbar}{%
   \begin{tikzpicture}[overlay, remember picture]
     \begin{scope}[shift={(current page.north west)}, x=1cm, y=1cm]
-      \ifpolimi@showlogo
-        \node[anchor=north west, inner sep=0pt] at (0.5,-0.25)
-          {\includegraphics[height=0.3cm]{\polimilogotipo}};
-      \fi
+      % Logotype (\polimibarlogo)
+      \polimi@logonode{bar}{0.5}{-0.25}{\polimilogotipo}{0.3cm}%
       % \draw[polimiMist, line width=0.3pt] (0.5,-0.75) -- (15.5,-0.75);
       % Center: institution + custom header text
       \node[anchor=base, text=polimiSlate] at (8,-0.45)
@@ -274,7 +466,7 @@
 % section title between the lines + 96pt zero-padded number bottom-right.
 \defbeamertemplate*{section page}{polimi}{%
   \begin{tikzpicture}[overlay, remember picture]
-    \fill[polimiNavy]
+    \fill[polimiCover]
       (current page.south west) rectangle (current page.north east);
     \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
       % Big dome — radial gradient: solid steel near outer edge, fading to
@@ -287,7 +479,7 @@
           %   (8.87, 0) circle (7.15);
             % \shade[outer color=polimiSteel, inner color=polimiNavy, opacity=0.45]
             %     (8.85, 0) circle (7.15);
-          \shade[outer color=polimiSteel, inner color=polimiNavy, opacity=0.30]
+          \shade[outer color=polimiCoverDeco, inner color=polimiCover, opacity=\polimi@domeopacity]
               (6.0, -0.0) circle (18.0);
         \end{scope}
       \end{scope}
@@ -296,9 +488,9 @@
       \draw[polimiPaper, opacity=0.45, line width=0.35pt] (1.68, 0) -- (1.68, 9);
       \draw[polimiPaper, opacity=0.65, line width=0.55pt]
         (0.84, 6.29) circle (0.84);
-      \node[anchor=west, text=polimiPaper, align=left] at (4.22, 6.29)
+      \node[anchor=west, text=polimiOnCover, align=left] at (4.22, 6.29)
         {\usebeamerfont{section title}\insertsectionhead};
-      \node[anchor=south east, text=polimiPaper, inner sep=0pt]
+      \node[anchor=south east, text=polimiOnCover, inner sep=0pt]
         at (15.65, 0.85)
         {\usebeamerfont{section number}%
          \ifnum\value{section}<10 0\fi\arabic{section}};
@@ -465,7 +657,7 @@
 \newcommand{\closingframe}[1][\polimi@thanks]{%
   \begin{frame}[plain, noframenumbering]
     \begin{tikzpicture}[overlay, remember picture]
-      \fill[polimiNavy]
+      \fill[polimiCover]
         (current page.south west) rectangle (current page.north east);
       \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
         % Two horizontal lines bracketing the text
@@ -476,7 +668,7 @@
         \draw[polimiPaper, opacity=0.65, line width=0.55pt]
           (0.84, 2.7) circle (0.84);
         % Centred text
-        \node[text=polimiPaper, align=center] at (8, 2.7)
+        \node[text=polimiOnCover, align=center] at (8, 2.7)
           {\usebeamerfont{section title}#1};
       \end{scope}
     \end{tikzpicture}%
@@ -493,10 +685,7 @@
       \fill[polimiBibBg]
         (current page.south west) rectangle (current page.north east);
       \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
-        \ifpolimi@showlogo
-          \node[anchor=north west, inner sep=0pt] at (0.62, 8.6)
-            {\includegraphics[height=1.5cm]{\polimilogodark}};
-        \fi
+        \polimi@logonode{bar}{0.62}{8.6}{\polimilogodark}{\polimi@biglogoht}% (\polimibarlogo)
         \node[anchor=north west, text=polimiNavy, align=left,
               text width=14cm, font=\footnotesize] at (0.79, 6.7) {#1};
         \node[anchor=north east, text=polimiNavy, align=left,
@@ -514,10 +703,7 @@
       \fill[polimiBibBg]
         (current page.south west) rectangle (current page.north east);
       \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
-        \ifpolimi@showlogo
-          \node[anchor=north west, inner sep=0pt] at (0.62, 8.6)
-            {\includegraphics[height=1.5cm]{\polimilogodark}};
-        \fi
+        \polimi@logonode{bar}{0.62}{8.6}{\polimilogodark}{\polimi@biglogoht}% (\polimibarlogo)
         \node[anchor=north west, text=polimiNavy, align=left,
               text width=9cm, font=\footnotesize] at (0.79, 6.7) {#1};
         \node[anchor=north east, inner sep=0pt] at (14.8, 6.7)
@@ -838,7 +1024,7 @@
           \clip (0,0) rectangle (16,9);
           \begin{scope}
             \clip (8.85, 0) circle (7.15);
-            \shade[outer color=polimiMist, inner color=polimiPanel, opacity=0.40]
+            \shade[outer color=polimiPanelDeco, inner color=polimiPanel, opacity=0.40]
               (6.0, 0.0) circle (18.0);
           \end{scope}
         \end{scope}
@@ -891,16 +1077,14 @@
       \fill[polimiPaper]
         (current page.south west) rectangle (current page.north east);
       % Navy header strip
-      \fill[polimiNavy]
+      \fill[polimiCover]
         (current page.north west)
         rectangle ([yshift=-1.8cm]current page.north east);
       \begin{scope}[shift={(current page.south west)}, x=1cm, y=1cm]
-        \ifpolimi@showlogo
-          \node[anchor=north west, inner sep=0pt] at (0.62, 8.88)
-            {\includegraphics[height=1.5cm]{\polimilogowhite}};
-        \fi
+        % Logo (\polimititlelogo); the smaller logo of a structure has the same vertical centre (8.13 cm) as the flag
+        \polimi@logonode{title}{0.62}{\ifpolimi@struct 8.58\else 8.88\fi}{\polimi@coverlogo}{\polimi@biglogoht}%
         % Frame counter (top right of strip)
-        \node[anchor=base east, text=polimiPaper] at (15.5, 8.55)
+        \node[anchor=base east, text=polimiOnCover] at (15.5, 8.55)
           {\usebeamerfont{headerbar}%
            \insertframenumber/\inserttotalframenumber};
         % Name
